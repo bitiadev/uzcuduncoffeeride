@@ -54,6 +54,11 @@ const sidebarItems = [
     href: "/admin/logistics",
     icon: Bike,
   },
+  {
+    title: "Reportes",
+    href: "/admin/reports",
+    icon: BarChart3,
+  }
   /* {
     title: "Reportes",
     href: "/admin/reports",
