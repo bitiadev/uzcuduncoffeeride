@@ -93,5 +93,11 @@ La arquitectura de la base de datos se centra en las siguientes entidades princi
 - `Pedido` y `Pedido_Productos`: Para gestionar las órdenes de los clientes.
 - `Cliente` y `Usuario`: Para la gestión de clientes y administradores.
 - `Comercio` y `Sucursal`: Para la información del negocio.
++
++---
++
++## 6. Bitácora de Desarrollo
++
++Para un seguimiento detallado de los cambios y avances del proyecto, consulta el archivo [CHANGELOG.md](./CHANGELOG.md).
 
 ---

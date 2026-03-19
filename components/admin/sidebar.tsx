@@ -55,6 +55,11 @@ const sidebarItems = [
     icon: Bike,
   },
   {
+    title: "Medios de Pago",
+    href: "/admin/payment-methods",
+    icon: Settings,
+  },
+  {
     title: "Reportes",
     href: "/admin/reports",
     icon: BarChart3,

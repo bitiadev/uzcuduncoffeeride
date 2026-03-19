@@ -30,6 +30,8 @@ import { AddressInput } from "@/components/checkout/addressAutocomplete";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import data from "@/lib/data";
 import { io } from "socket.io-client";
+import { cn } from "@/lib/utils";
+import { PaymentSelector } from "@/components/checkout/payment-selector";
 
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || (typeof window !== "undefined" ? window.location.origin : "");
@@ -63,6 +65,13 @@ interface ShippingData {
   deliveryMethod: "shipping" | "pickup";
 }
 
+interface ActivePaymentMethod {
+  id: number;
+  nombre: string;
+  logo_url: string;
+  badge_texto: string | null;
+}
+
 interface ShippingFormProps {
   shippingData: ShippingData;
   setShippingData: (data: ShippingData) => void;
@@ -86,6 +95,11 @@ interface OrderSummaryProps {
   shippingLoading: boolean;
   shippingError: string | null;
   shippingSource: "match" | "fallback" | null;
+
+  // 👇 NUEVO: navegación de pasos en desktop
+  step: number;
+  setStep: (step: number) => void;
+  selectedMethod: ActivePaymentMethod | null;
 }
 
 /* =========================
@@ -197,7 +211,7 @@ const ShippingForm: React.FC<ShippingFormProps> = ({ shippingData, setShippingDa
    ========================= */
 const OrderSummary: React.FC<OrderSummaryProps> = ({
   items, totalPrice, shipping, finalTotal, isProcessing, handleCreatePreference, preferenceId, isMobile, onBack, updateQuantity,
-  shippingLoading, shippingError, shippingSource
+  shippingLoading, shippingError, shippingSource, step, setStep, selectedMethod
 }) => (
   <div className="flex flex-col h-full">
     {/* Área de contenido con scroll */}
@@ -258,6 +272,19 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             <span>Total:</span>
             <span>${finalTotal.toFixed(2)}</span>
           </div>
+
+          {/* 👇 NUEVO: Mostrar medio de pago seleccionado en el resumen */}
+          {(step === 3 || (isMobile && step === 2)) && selectedMethod && (
+            <div className="mt-4 p-3 bg-primary/5 border border-primary/10 rounded-lg flex items-center gap-3">
+              <div className="relative w-8 h-8 flex-shrink-0 bg-white rounded border p-1">
+                <Image src={selectedMethod.logo_url || "/placeholder.svg"} alt={selectedMethod.nombre} fill className="object-contain" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground leading-none">Medio de pago</p>
+                <p className="text-sm font-bold">{selectedMethod.nombre}</p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -277,9 +304,20 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           ) : isProcessing ? (
             <Skeleton className="h-11 w-full" />
           ) : (
-            <Button onClick={handleCreatePreference} className="w-full" size="lg">
-              {"Confirmar y Pagar"}
-            </Button>
+            // En Mobile, mostramos el botón según el paso. En Desktop, solo mostramos el botón de pago en el paso final.
+            (isMobile || step === 3) && (
+              <Button 
+                onClick={() => {
+                  if (isMobile && step === 1) setStep(2);
+                  else if (isMobile && step === 2) handleCreatePreference(); // En mobile, el paso 2 ya es el final (con selector integrado o resumen)
+                  else handleCreatePreference();
+                }} 
+                className="w-full" 
+                size="lg"
+              >
+                {isMobile && step === 1 ? "Continuar al pago" : "Confirmar y Pagar"}
+              </Button>
+            )
           )}
 
           {isMobile && (
@@ -313,6 +351,7 @@ export default function CheckoutPage() {
   const [shippingData, setShippingData] = useState<ShippingData>({
     firstName: "", lastName: "", email: "", phone: "", address: "", city: "", zipCode: "", notes: "", deliveryMethod: "shipping",
   });
+  const [selectedMethod, setSelectedMethod] = useState<ActivePaymentMethod | null>(null);
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
@@ -406,15 +445,15 @@ export default function CheckoutPage() {
     }
   }
 
-  // 👇 NUEVO: triggers del cálculo (al tipear CP, debounce)
+  // 👇 NUEVO: triggers del cálculo (al tipear CP, debounce o cambiar método)
   useEffect(() => {
-    if (cpDebounced) {
+    if (cpDebounced || shippingData.deliveryMethod === "pickup") {
       fetchQuote(cpDebounced);
     } else {
       setShippingQuote(null);
       setShippingError(null);
     }
-  }, [cpDebounced]);
+  }, [cpDebounced, shippingData.deliveryMethod]);
 
   // 👇 NUEVO: si entras a “Resumen” en mobile, asegurá última cotización
   useEffect(() => {
@@ -429,6 +468,15 @@ export default function CheckoutPage() {
   const finalTotal = totalPrice + shipping;
 
   const handleCreatePreference = async () => {
+    if (!selectedMethod) {
+      toast({
+        title: "Seleccioná un medio de pago",
+        description: "Debés elegir cómo vas a pagar para continuar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { notes, ...requiredData } = shippingData;
   
     // Validar campos según el método de entrega
@@ -477,12 +525,18 @@ export default function CheckoutPage() {
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
-        body: JSON.stringify({ amount: finalTotal, products: items, shippingData: shippingData, shippingPrice: shippingToSend }),
+        body: JSON.stringify({ 
+          amount: finalTotal, 
+          products: items, 
+          shippingData: shippingData, 
+          shippingPrice: shippingToSend,
+          medioPagoId: selectedMethod.id 
+        }),
       });
       const data = await res.json();
       if (data.url) {
         // Guardar pedido en base de datos antes de redirigir
-        await SaveOrder(shippingData, finalTotal, items, shippingToSend, data.paymentHash);
+        await SaveOrder(shippingData, finalTotal, items, shippingToSend, data.paymentHash, selectedMethod.id);
         window.location.href = data.url; // Redirección externa a Payway [13]
       } else {
         toast({
@@ -526,7 +580,7 @@ export default function CheckoutPage() {
     } */
   };
 
-  const SaveOrder = async (shippingData: ShippingData, totalPrice: number, items: CartItem[], shipping: number, paymentHash: string) => {
+  const SaveOrder = async (shippingData: ShippingData, totalPrice: number, items: CartItem[], shipping: number, paymentHash: string, medioPagoId: number) => {
      // NUEVO: Guardar pedido en base de datos
     try {
       const res = await fetch('/api/orders', {
@@ -542,6 +596,7 @@ export default function CheckoutPage() {
           payer_zip: shippingData.zipCode,
           products: items,
           paymentHash: paymentHash,
+          medio_pago_id: medioPagoId
         }),
       });
       if (res.ok) {
@@ -587,13 +642,21 @@ export default function CheckoutPage() {
     handleCreatePreference,
     preferenceId,
     isMobile,
-    onBack: () => setStep(1),
+    onBack: () => {
+      if (step === 3) setStep(2);
+      else setStep(1);
+    },
     updateQuantity,
 
     // 👇 NUEVO: feedback de envío
     shippingLoading,
     shippingError,
     shippingSource: shippingQuote?.source ?? null,
+
+    // 👇 NUEVO: navegación de pasos
+    step,
+    setStep,
+    selectedMethod,
   };
 
   return (
@@ -614,7 +677,7 @@ export default function CheckoutPage() {
                 <Card>
                   <CardContent className="pt-6 space-y-4">
                     <Button type="submit" form="shipping-form" className="w-full" size="lg">
-                      Continuar al resumen
+                      {shippingData.deliveryMethod === "pickup" ? "Continuar al pago" : "Siguiente: Pago"}
                     </Button>
                     <Link href="/" className="w-full inline-block text-center">
                       <Button className="w-full" size="lg" variant="outline">
@@ -625,20 +688,159 @@ export default function CheckoutPage() {
                 </Card>
               </div>
             </div>
-          ) : (
-            <div className="h-[calc(100vh-112px)]">
-              <OrderSummary {...orderSummaryProps} />
+          ) : step === 2 ? (
+            <div className="h-[calc(100vh-112px)] overflow-y-auto space-y-6">
+                <Card className="border-primary/20 shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-2xl">Elegí cómo pagar</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <PaymentSelector 
+                      onSelect={(m) => setSelectedMethod(m)} 
+                      selectedId={selectedMethod?.id} 
+                    />
+                  </CardContent>
+                </Card>
+                <OrderSummary {...orderSummaryProps} onBack={() => setStep(1)} />
             </div>
+          ) : (
+            null // En mobile no tenemos paso 3 separado por ahora, o lo integramos arriba
           )
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <ShippingForm
-              shippingData={shippingData}
-              setShippingData={setShippingData}
-              isMobile={isMobile}
-              onStepForward={() => { }}
-            />
-            <OrderSummary {...orderSummaryProps} />
+            <div className="space-y-6">
+              {/* Paso 1: Envío */}
+              <div className={cn(step !== 1 && "opacity-50 pointer-events-none")}>
+                <Card className={cn(step === 1 ? "border-primary shadow-md" : "border-border")}>
+                   <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">1</span>
+                        Información de Envío
+                      </span>
+                      {step !== 1 && (
+                        <Button variant="ghost" size="sm" onClick={() => setStep(1)} className="text-primary">
+                          Editar
+                        </Button>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  {step === 1 && (
+                    <CardContent className="pt-0">
+                      <ShippingForm
+                        shippingData={shippingData}
+                        setShippingData={setShippingData}
+                        isMobile={isMobile}
+                        onStepForward={() => setStep(2)}
+                      />
+                      <div className="mt-6 flex justify-end">
+                        <Button type="submit" form="shipping-form" size="lg" className="px-8">
+                          Siguiente: Elegir Pago
+                        </Button>
+                      </div>
+                    </CardContent>
+                  )}
+                  {step !== 1 && (
+                    <CardContent className="pb-4 pt-0 text-sm italic text-muted-foreground">
+                      {shippingData.deliveryMethod === "pickup" ? "Retiro en tienda" : `${shippingData.address}, ${shippingData.city}`}
+                    </CardContent>
+                  )}
+                </Card>
+              </div>
+
+              {/* Paso 2: Pago */}
+              <div className={cn(step < 2 && "opacity-50 pointer-events-none", step > 2 && "opacity-50 pointer-events-none")}>
+                <Card className={cn(step === 2 ? "border-primary shadow-md" : "border-border")}>
+                   <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">2</span>
+                        Medio de Pago
+                      </span>
+                      {step > 2 && (
+                        <Button variant="ghost" size="sm" onClick={() => setStep(2)} className="text-primary">
+                          Editar
+                        </Button>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  {step === 2 && (
+                    <CardContent className="pt-0">
+                      <PaymentSelector 
+                        onSelect={(m) => setSelectedMethod(m)} 
+                        selectedId={selectedMethod?.id} 
+                      />
+                      <div className="mt-6 flex justify-between gap-4">
+                        <Button variant="outline" onClick={() => setStep(1)}>
+                          Volver
+                        </Button>
+                        <Button 
+                          onClick={() => {
+                            if (selectedMethod) setStep(3)
+                            else toast({ title: "Seleccioná un medio de pago" })
+                          }} 
+                          disabled={!selectedMethod}
+                          className="px-8"
+                        >
+                          Siguiente: Revisar Pedido
+                        </Button>
+                      </div>
+                    </CardContent>
+                  )}
+                  {step > 2 && (
+                    <CardContent className="pb-4 pt-0 text-sm italic text-muted-foreground">
+                      {selectedMethod?.nombre || "No seleccionado"}
+                    </CardContent>
+                  )}
+                </Card>
+              </div>
+
+              {/* Paso 3: Revisión Final */}
+              {step === 3 && (
+                 <Card className="border-primary shadow-md bg-primary/5">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-primary">
+                        <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">3</span>
+                        Revisión Final
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="p-3 bg-white rounded-md border">
+                          <p className="text-xs text-muted-foreground font-bold uppercase mb-1">Cliente</p>
+                          <p className="font-medium">{shippingData.firstName} {shippingData.lastName}</p>
+                          <p className="text-xs text-muted-foreground">{shippingData.email}</p>
+                        </div>
+                        <div className="p-3 bg-white rounded-md border">
+                          <p className="text-xs text-muted-foreground font-bold uppercase mb-1">Entrega</p>
+                          <p className="font-medium">{shippingData.deliveryMethod === 'pickup' ? 'Retiro en tienda' : 'Envio a domicilio'}</p>
+                          <p className="text-xs text-muted-foreground truncate">{shippingData.deliveryMethod === 'pickup' ? data.direccion : shippingData.address}</p>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-white rounded-md border flex items-center justify-between">
+                         <div>
+                            <p className="text-xs text-muted-foreground font-bold uppercase mb-1">Medio de Pago</p>
+                            <p className="font-medium text-lg">{selectedMethod?.nombre}</p>
+                         </div>
+                         {selectedMethod?.logo_url && (
+                           <div className="relative w-12 h-12 bg-gray-50 rounded border p-1">
+                              <Image src={selectedMethod.logo_url} alt={selectedMethod.nombre} fill className="object-contain" />
+                           </div>
+                         )}
+                      </div>
+                      
+                      <div className="flex items-center gap-2 p-3 bg-yellow-50 text-yellow-800 rounded-md border border-yellow-100 text-sm">
+                        <Shield className="w-4 h-4 flex-shrink-0" />
+                        Verificá que tus datos sean correctos antes de confirmar el pago.
+                      </div>
+                    </CardContent>
+                 </Card>
+              )}
+            </div>
+
+            <div className={cn(isMobile && "h-[calc(100vh-112px)]")}>
+                 <OrderSummary {...orderSummaryProps} />
+            </div>
           </div>
         )}
       </div>
