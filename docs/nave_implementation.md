@@ -70,3 +70,17 @@ if (paymentData.status.name === 'APPROVED') {
 - `app/api/nave/status/route.ts`
 - `app/api/nave/notifications/route.ts`
 - Punto de integración en `app/api/checkout/route.ts`
+
+## 6. Datos de tarjetas de prueba
+
+```
+Marca	Número	Vencimiento	CVV	Estado
+Naranja crédito	5895 6248 4026 3355	04/40	928	APPROVED
+Naranja crédito	5895 6248 9347 1379	07/40	374	REJECTED
+Naranja crédito	5895 6134 3478 9277	04/40	990	REJECTED
+Visa crédito (1 cuota)	4025 2200 0000 0139	Cualquiera	Cualquiera	APPROVED
+Visa crédito (6 cuotas)	4761 2299 9900 0231	12/31	078	APPROVED
+Visa crédito (1 cuota)	4025 2200 0000 0127	Cualquiera	Cualquiera	REJECTED
+Visa crédito (1 cuota)	4025 2200 0000 1040	Cualquiera	Cualquiera	REJECTED
+
+```
