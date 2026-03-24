@@ -65,7 +65,7 @@ export function PaymentSelector({ onSelect, selectedId }: PaymentSelectorProps) 
             )}
             onClick={() => onSelect(method)}
           >
-            <CardContent className="p-6 flex items-center gap-6">
+            <CardContent className="px-4 flex items-center gap-4">
               <div className="relative w-20 h-20 flex-shrink-0 bg-white rounded-lg border p-2 border-gray-100 flex items-center justify-center shadow-sm">
                 <Image 
                   src={method.logo_url || "/placeholder.svg"} 

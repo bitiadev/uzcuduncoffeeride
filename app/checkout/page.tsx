@@ -196,9 +196,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   items, totalPrice, shipping, finalTotal, isProcessing, handleCreatePreference, preferenceId, isMobile, onBack, updateQuantity,
   shippingLoading, shippingError, shippingSource, step, setStep, selectedMethod
 }) => (
-  <div className="flex flex-col h-full">
+  <div className={cn("flex flex-col", !isMobile && "h-full")}>
     {/* Área de contenido con scroll */}
-    <div className="flex-grow overflow-y-auto space-y-6 pr-2">
+    <div className={cn("space-y-6 pr-2", !isMobile && "flex-grow overflow-y-auto")}>
       <Card>
         <CardHeader>
           <CardTitle>Resumen del Pedido</CardTitle>
@@ -502,40 +502,40 @@ export default function CheckoutPage() {
       return;
     }
 
-      setIsProcessing(true);
+    setIsProcessing(true);
       setIsRedirecting(true); // Mostrar de entrada
-      
     
-      //👇NUEVO: llamada a API para crear preferencia de pago
-      try {
-        const res = await fetch('/api/checkout', {
-          method: 'POST',
-          body: JSON.stringify({ 
-            amount: finalTotal, 
-            products: items, 
-            shippingData: shippingData, 
-            shippingPrice: shippingToSend,
-            medioPagoId: selectedMethod.id 
-          }),
-        });
-        const data = await res.json();
-        if (data.url) {
-          // Guardar pedido en base de datos antes de redirigir
-          await SaveOrder(shippingData, finalTotal, items, shippingToSend, data.paymentHash, selectedMethod.id);
-          
-          // Pequeño delay para que el usuario vea el estado de procesamiento si la red es muy rápida
-          setTimeout(() => {
-            window.location.href = data.url; 
-          }, 1500);
-        } else {
+  
+    //👇NUEVO: llamada a API para crear preferencia de pago
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        body: JSON.stringify({ 
+          amount: finalTotal, 
+          products: items, 
+          shippingData: shippingData, 
+          shippingPrice: shippingToSend,
+          medioPagoId: selectedMethod.id 
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        // Guardar pedido en base de datos antes de redirigir
+        await SaveOrder(shippingData, finalTotal, items, shippingToSend, data.paymentHash, selectedMethod.id);
+        
+        // Pequeño delay para que el usuario vea el estado de procesamiento si la red es muy rápida
+        setTimeout(() => {
+          window.location.href = data.url; 
+        }, 1500);
+      } else {
           setIsRedirecting(false); // Ocultar si falló
-          toast({
-            title: "Error al crear el pago",
+        toast({
+          title: "Error al crear el pago",
             description: `Hubo un problema al conectar con ${selectedMethod?.pasarela_nombre || 'la pasarela'}. Intenta de nuevo.`,
-            variant: "destructive",
-          });
-          throw new Error("URL de pago no válida");
-        }
+          variant: "destructive",
+        });
+        throw new Error("URL de pago no válida");
+      }
     } catch (error) {
       setIsRedirecting(false);
       console.error(error);
@@ -671,7 +671,7 @@ export default function CheckoutPage() {
             </div>
             <div className="space-y-2">
               <h2 className="text-2xl font-bold tracking-tight">Procesando tu pago</h2>
-              <p className="text-muted-foreground">Te estamos redirigiendo a <span className="font-semibold text-foreground">{selectedMethod?.pasarela_nombre || "la pasarela segura"}</span> para completar tu compra.</p>
+              <p className="text-muted-foreground">Te estamos redirigiendo a <span className="font-semibold text-foreground">{selectedMethod?.nombre || "la pasarela segura"}</span> para completar tu compra.</p>
             </div>
             <div className="flex flex-col items-center gap-4">
               <div className="flex gap-1">
@@ -713,7 +713,7 @@ export default function CheckoutPage() {
               </div>
             </div>
           ) : step === 2 ? (
-            <div className="h-[calc(100vh-112px)] overflow-y-auto space-y-6">
+            <div className="space-y-6 pb-20">
                 <Card className="border-primary/20 shadow-sm">
                   <CardHeader>
                     <CardTitle className="text-2xl">Elegí cómo pagar</CardTitle>
