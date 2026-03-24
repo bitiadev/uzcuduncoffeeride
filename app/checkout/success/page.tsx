@@ -7,9 +7,15 @@ import { use, useEffect } from 'react';
 
 import io from 'socket.io-client';
 import { toast } from "@/hooks/use-toast";
+import { useCart } from "@/contexts/cart-context";
 const socket = io(process.env.NEXT_PUBLIC_URL!);
 
 export default function SuccessPage() {
+  const { clearCart } = useCart();
+
+  useEffect(() => {
+    clearCart();
+  }, [clearCart]);
 
   return (
     <div className="container mt-4 mx-auto p-4 text-center">

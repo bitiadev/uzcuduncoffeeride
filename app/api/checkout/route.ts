@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createCheckoutLink } from '@/lib/payway';
+import { createNaveCheckoutLink } from '@/lib/nave';
 import { getGatewayByMethodId } from '@/lib/queries';
 
 export async function POST(request: Request) {
@@ -27,8 +28,27 @@ export async function POST(request: Request) {
       const paymentHash = result;
       return NextResponse.json({ url: `${paymentHash}`, paymentHash: paymentHash }, { status: 200});
     } else if (gateway.nombre === 'Nave') {
-      return NextResponse.json({ error: "La pasarela Nave estará disponible próximamente." }, { status: 501 });
+      const naveData = await createNaveCheckoutLink({
+        external_payment_id: `order-${Date.now()}`,
+        amount: amount,
+        products: body.products,
+        buyer: {
+          email: body.shippingData.email,
+          name: `${body.shippingData.firstName} ${body.shippingData.lastName}`,
+          phone: body.shippingData.phone,
+          address: {
+            street: body.shippingData.address,
+            city: body.shippingData.city,
+            zipcode: body.shippingData.zipCode,
+          }
+        },
+        callback_url: `${process.env.NEXT_PUBLIC_URL}/api/nave/status`,
+      });
+
+      return NextResponse.json({ url: naveData.checkout_url, paymentHash: naveData.id }, { status: 200 });
     }
+
+
 
     return NextResponse.json({ error: "Pasarela no soportada" }, { status: 500 });
   } catch (error) {
