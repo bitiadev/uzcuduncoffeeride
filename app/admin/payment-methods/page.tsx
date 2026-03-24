@@ -11,21 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { Pencil, Check, X } from "lucide-react"
-
-interface Gateway {
-  id: number
-  nombre: string
-  habilitada: boolean
-}
-
-interface PaymentMethod {
-  id: number
-  nombre: string
-  logo_url: string
-  badge_texto: string | null
-  pasarela_id: number | null
-  pasarela_nombre: string | null
-}
+import type { Gateway, ActivePaymentMethod as PaymentMethod } from "@/lib/types"
 
 export default function PaymentMethodsPage() {
   const [gateways, setGateways] = useState<Gateway[]>([])

@@ -6,14 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { Skeleton } from "@/components/ui/skeleton"
-
-interface ActivePaymentMethod {
-  id: number
-  nombre: string
-  logo_url: string
-  badge_texto: string | null
-  pasarela_nombre: string
-}
+import type { ActivePaymentMethod } from "@/lib/types"
 
 interface PaymentSelectorProps {
   onSelect: (method: ActivePaymentMethod) => void

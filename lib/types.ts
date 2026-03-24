@@ -17,11 +17,14 @@ export interface Product {
 export interface Subcategory {
   id: string;
   nombre: string;
+  rubro_id: string;
 }
+
 
 export interface Category {
   id: string;
   nombre: string;
+  subcategories?: Subcategory[];
 }
 
 export interface Size {
@@ -76,4 +79,49 @@ export interface OrderProduct {
   nombre: string;
   talle_id?: number | null;
   talle_nombre?: string | null;
+}
+
+export interface ShippingData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  zipCode: string;
+  notes: string;
+  deliveryMethod: "shipping" | "pickup";
+}
+
+export interface ActivePaymentMethod {
+  id: number;
+  nombre: string;
+  logo_url: string;
+  badge_texto: string | null;
+  pasarela_id?: number | null;
+  pasarela_nombre?: string | null;
+}
+
+export interface User {
+  id: string | number;
+  email: string;
+  nombre: string;
+  apellido: string;
+  rol_id: number;
+  rol_nombre?: string;
+  rol_name?: string;
+  pass?: string;
+}
+
+export interface Rol {
+  id: number;
+  nombre?: string;
+  descripcion?: string;
+}
+
+
+export interface Gateway {
+  id: number;
+  nombre: string;
+  habilitada?: boolean;
 }

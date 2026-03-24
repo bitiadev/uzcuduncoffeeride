@@ -25,7 +25,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, ChangeEvent } from "react";
 import { toast } from "@/hooks/use-toast";
-import type { CartItem } from "@/lib/types";
+import type { CartItem, ShippingData, ActivePaymentMethod } from "@/lib/types";
 import { AddressInput } from "@/components/checkout/addressAutocomplete";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import data from "@/lib/data";
@@ -53,24 +53,7 @@ function useDebounced<T>(value: T, delay = 650) {
 }
 
 // Definición de tipos (tuyos)
-interface ShippingData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  zipCode: string;
-  notes: string;
-  deliveryMethod: "shipping" | "pickup";
-}
-
-interface ActivePaymentMethod {
-  id: number;
-  nombre: string;
-  logo_url: string;
-  badge_texto: string | null;
-}
+// Movidos a lib/types.ts
 
 interface ShippingFormProps {
   shippingData: ShippingData;
@@ -483,11 +466,11 @@ export default function CheckoutPage() {
     let isFormValid = true;
     if (shippingData.deliveryMethod === "shipping") {
       // Para envío a domicilio, validar todos los campos
-      isFormValid = Object.values(requiredData).every((value) => value.trim() !== "");
+      isFormValid = (Object.values(requiredData) as string[]).every((value) => value.trim() !== "");
     } else {
       // Para retiro en tienda, validar solo los campos necesarios (excluir address, city, zipCode)
       const { address, city, zipCode, ...requiredPickupData } = requiredData;
-      isFormValid = Object.values(requiredPickupData).every((value) => value.trim() !== "");
+      isFormValid = (Object.values(requiredPickupData) as string[]).every((value) => value.trim() !== "");
     }
 
     if (!isFormValid) {
