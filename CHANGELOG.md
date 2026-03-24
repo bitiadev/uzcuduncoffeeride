@@ -39,3 +39,14 @@ Todas las modificaciones realizadas en el proyecto se registrarán aquí, detall
   - [MODIFICADO] `app/checkout/success/page.tsx`
   - [MODIFICADO] `app/api/nave/notifications/route.ts`
   - [MODIFICADO] `app/api/payway/notifications/route.ts`
+
+## [2026-03-24 12:40] - Mejoras de UX y Notificaciones Real-time
+- **Avance:** Se implementó un overlay de redirección profesional con feedback visual del gateway seleccionado. Se habilitaron las notificaciones automáticas vía Socket.io desde los webhooks del servidor al Dashboard de Administración. Se refinó la página de éxito para manejar estados de pago 'Aprobado', 'Pendiente' y 'Rechazado' con iconografía dinámica y enlace directo a soporte vía WhatsApp.
+- **Archivos editados:**
+  - [MODIFICADO] `app/checkout/page.tsx`
+  - [MODIFICADO] `server.js`
+  - [MODIFICADO] `app/api/nave/notifications/route.ts`
+  - [MODIFICADO] `app/api/payway/notifications/route.ts`
+  - [MODIFICADO] `app/admin/orders/page.tsx`
+  - [MODIFICADO] `app/checkout/success/page.tsx`
+  - [MODIFICADO] `lib/types.ts`

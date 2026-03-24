@@ -336,6 +336,7 @@ export default function CheckoutPage() {
   });
   const [selectedMethod, setSelectedMethod] = useState<ActivePaymentMethod | null>(null);
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const isMobile = useIsMobile();
 
   // 👇 NUEVO: estado de cotización
@@ -501,39 +502,46 @@ export default function CheckoutPage() {
       return;
     }
 
-    setIsProcessing(true);
+      setIsProcessing(true);
+      setIsRedirecting(true); // Mostrar de entrada
+      
     
-  
-    //👇NUEVO: llamada a API para crear preferencia de pago
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        body: JSON.stringify({ 
-          amount: finalTotal, 
-          products: items, 
-          shippingData: shippingData, 
-          shippingPrice: shippingToSend,
-          medioPagoId: selectedMethod.id 
-        }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        // Guardar pedido en base de datos antes de redirigir
-        await SaveOrder(shippingData, finalTotal, items, shippingToSend, data.paymentHash, selectedMethod.id);
-        window.location.href = data.url; // Redirección externa a Payway [13]
-      } else {
-        toast({
-          title: "Error al crear el pago",
-          description: "Hubo un problema al conectar con Payway. Intenta de nuevo.",
-          variant: "destructive",
+      //👇NUEVO: llamada a API para crear preferencia de pago
+      try {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          body: JSON.stringify({ 
+            amount: finalTotal, 
+            products: items, 
+            shippingData: shippingData, 
+            shippingPrice: shippingToSend,
+            medioPagoId: selectedMethod.id 
+          }),
         });
-        throw new Error("URL de pago no válida");
-      }
+        const data = await res.json();
+        if (data.url) {
+          // Guardar pedido en base de datos antes de redirigir
+          await SaveOrder(shippingData, finalTotal, items, shippingToSend, data.paymentHash, selectedMethod.id);
+          
+          // Pequeño delay para que el usuario vea el estado de procesamiento si la red es muy rápida
+          setTimeout(() => {
+            window.location.href = data.url; 
+          }, 1500);
+        } else {
+          setIsRedirecting(false); // Ocultar si falló
+          toast({
+            title: "Error al crear el pago",
+            description: `Hubo un problema al conectar con ${selectedMethod?.pasarela_nombre || 'la pasarela'}. Intenta de nuevo.`,
+            variant: "destructive",
+          });
+          throw new Error("URL de pago no válida");
+        }
     } catch (error) {
+      setIsRedirecting(false);
       console.error(error);
       toast({
         title: "Error al crear el pago",
-        description: "Hubo un problema al conectar con Payway. Intenta de nuevo.",
+        description: `Hubo un problema al conectar con ${selectedMethod?.pasarela_nombre || 'la pasarela'}. Intenta de nuevo.`,
         variant: "destructive",
       });
     } finally {
@@ -644,6 +652,39 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Overlay de Redirección */}
+      {isRedirecting && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="text-center space-y-6 max-w-md px-6">
+            <div className="relative w-24 h-24 mx-auto mb-4 bg-white rounded-2xl shadow-lg p-4 flex items-center justify-center border">
+              {selectedMethod?.logo_url ? (
+                <Image 
+                  src={selectedMethod.logo_url} 
+                  alt={selectedMethod.nombre} 
+                  width={80} 
+                  height={80} 
+                  className="object-contain"
+                />
+              ) : (
+                <Shield className="w-12 h-12 text-primary" />
+              )}
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold tracking-tight">Procesando tu pago</h2>
+              <p className="text-muted-foreground">Te estamos redirigiendo a <span className="font-semibold text-foreground">{selectedMethod?.pasarela_nombre || "la pasarela segura"}</span> para completar tu compra.</p>
+            </div>
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div>
+                <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></div>
+                <div className="w-2 h-2 rounded-full bg-primary animate-bounce"></div>
+              </div>
+              <p className="text-xs text-muted-foreground italic">No cierres ni recargues esta ventana</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-4 py-8">
         {isMobile ? (
           step === 1 ? (

@@ -18,14 +18,29 @@ export async function POST(request: Request) {
         const orderId = external_payment_id.replace('order-', '');
         
         // Actualizamos el pedido en la base de datos (marcar como pagado)
-        // Usamos el external_payment_id o el payment_hash para identificar la orden
         await db.query(
           'UPDATE pedido SET pago = $1, status = $2 WHERE payment_hash = $3 OR id = $4',
           [true, 'paid', paymentData.payment_request_id, isNaN(Number(orderId)) ? -1 : Number(orderId)]
         );
 
+        // Emitir evento para actualizar el dashboard en tiempo real
+        if ((global as any).io) {
+          (global as any).io.emit('updatePedido', { id: orderId, status: 'paid' });
+          console.log('Evento updatePedido emitido (Nave)');
+        }
         
         console.log(`Orden ${external_payment_id} marcada como PAGADA vía Webhook de Nave`);
+      } else if (paymentData.status && (paymentData.status.name === 'REJECTED' || paymentData.status.name === 'EXPIRED')) {
+        const orderId = external_payment_id.replace('order-', '');
+        await db.query(
+          'UPDATE pedido SET status = $1 WHERE payment_hash = $2 OR id = $3',
+          ['rejected', paymentData.payment_request_id, isNaN(Number(orderId)) ? -1 : Number(orderId)]
+        );
+
+        if ((global as any).io) {
+          (global as any).io.emit('updatePedido', { id: orderId, status: 'rejected' });
+        }
+        console.log(`Orden ${external_payment_id} marcada como RECHAZADA vía Webhook de Nave`);
       }
     }
 

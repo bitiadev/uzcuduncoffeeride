@@ -15,7 +15,10 @@ La aplicación se divide en dos áreas principales: la tienda pública y el pane
 - **Página de Inicio Dinámica:** Presenta la marca con una sección "hero", un carrusel de categorías y secciones de contenido temático.
 - **Navegación de Productos:** Permite a los usuarios explorar el catálogo de productos (implícito en la estructura).
 - **Carrito de Compras:** Un panel lateral (`Cart-Sidebar`) permite a los usuarios ver y gestionar los productos que desean comprar, gestionado a través de un contexto global de React.
-- **Proceso de Checkout:** Una página dedicada para finalizar la compra.
+- **Proceso de Checkout:** Una página dedicada para finalizar la compra con:
+  - **Ruteo Dinámico de Pasarelas:** Selección automática entre Nave y Payway según la configuración.
+  - **Experiencia Premium:** Pantalla de redirección con feedback visual y logos de pasarela.
+  - **Notificaciones de Estado:** Feedback detallado según el resultado del pago (Aprobado/Rechazado/Pendiente).
 
 ### 2.2. Panel de Administración (`/admin`)
 

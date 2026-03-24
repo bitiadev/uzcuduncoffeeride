@@ -66,7 +66,7 @@ export interface Order {
   total: number;
   delivery: number;
   modo_entrega_id: number;
-  status: 'pending' | 'shipped' | 'delivered' | 'canceled' | 'paid';
+  status: 'pending' | 'shipped' | 'delivered' | 'canceled' | 'paid' | 'rejected';
   payer_zip?: string | null;
 }
 

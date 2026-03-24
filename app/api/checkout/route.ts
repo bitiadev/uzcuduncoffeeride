@@ -14,8 +14,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "El medio de pago seleccionado no tiene una pasarela activa." }, { status: 400 });
     }
 
-    // Ruteo dinámico
-    if (gateway.nombre === 'Payway') {
+    console.log(`>>> Iniciando pago con Pasarela: ${gateway.nombre} (ID: ${medioPagoId})`);
+
+    // Ruteo dinámico (insensible a mayúsculas/minúsculas)
+    const gatewayNormalized = gateway.nombre.toLowerCase();
+
+    if (gatewayNormalized === 'payway') {
       const result: any = await createCheckoutLink({
         total_price: amount,
         products: body.products,
@@ -27,7 +31,7 @@ export async function POST(request: Request) {
       
       const paymentHash = result;
       return NextResponse.json({ url: `${paymentHash}`, paymentHash: paymentHash }, { status: 200});
-    } else if (gateway.nombre === 'Nave') {
+    } else if (gatewayNormalized === 'nave') {
       const naveData = await createNaveCheckoutLink({
         external_payment_id: `order-${Date.now()}`,
         amount: amount,

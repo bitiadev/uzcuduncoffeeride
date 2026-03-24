@@ -15,12 +15,21 @@ export async function GET(request: Request) {
   
   console.log('Cliente regresó de Nave. ID de solicitud:', paymentRequestId, 'ID Externo:', externalId);
 
-  // Aunque las notificaciones vía Webhook son las encargadas de actualizar la DB de forma segura,
-  // aquí podríamos verificar el estado para dar feedback inmediato si fuera necesario.
-  
+  // Consultamos el estado real para la redirección
+  let status = 'pending';
+  if (paymentRequestId) {
+    try {
+      const paymentData = await getNavePaymentStatus(paymentRequestId);
+      if (paymentData.status?.name === 'APPROVED') status = 'approved';
+      if (paymentData.status?.name === 'REJECTED') status = 'rejected';
+    } catch (e) {
+      console.error('Error al verificar estado en redirección Nave:', e);
+    }
+  }
+
   // Redirigimos siempre a la página de éxito del checkout. 
   // La UI de éxito se encargará de mostrar el estado final consultando la orden.
-  const redirectUrl = `${process.env.NEXT_PUBLIC_URL}/checkout/success`;
+  const redirectUrl = `${process.env.NEXT_PUBLIC_URL}/checkout/success?status=${status}`;
   
   return NextResponse.redirect(redirectUrl);
 }

@@ -17,7 +17,8 @@ interface NaveTokenResponse {
  */
 export async function getNaveToken(): Promise<string> {
   if (!clientId || !clientSecret || !audience || !authUrl) {
-    throw new Error('Faltan configuraciones de Nave en .env.local');
+    console.error('CRITICAL: Faltan credenciales de Nave en .env.local');
+    throw new Error('CONFIG_MISSING: Faltan configuraciones de Nave (Client ID/Secret) en .env.local');
   }
 
   const response = await fetch(authUrl, {
