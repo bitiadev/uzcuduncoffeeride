@@ -14,8 +14,16 @@ app.prepare().then(() => {
   });
 
   const port = process.env.PORT || 3000;
-  // Configurar Socket.io Server
-  const io = socketIo(server);
+  // Configurar Socket.io Server con CORS
+  const io = socketIo(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+  });
+
+  // Hacer que io sea accesible globalmente para emitir desde rutas de API
+  global.io = io;
 
   io.on('connection', (socket) => {
     console.log('Client connected');

@@ -18,10 +18,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 
-import { Product, Subcategory } from "@/lib/types";
+import { Product, Subcategory, Size } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox"
 
-interface Size { id: number; nombre: string; tipo: string | null; stock?: number }
 
 interface ProductFormDialogProps {
   subcategories: Subcategory[];

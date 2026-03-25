@@ -22,6 +22,7 @@ const statusConfig = {
   shipped: { label: "Enviado", variant: "default" as const, icon: Truck },
   canceled: { label: "Cancelado", variant: "default" as const, icon: CheckCircle },
   paid: { label: "Pagado", variant: "success" as const, icon: DollarSign },
+  rejected: { label: "Rechazado", variant: "destructive" as const, icon: X },
 }
 
 /** Construye el HTML de la etiqueta para imprimir en un iframe oculto */
@@ -175,10 +176,18 @@ export default function OrdersPage() {
     });
     socket.on('addPedido', () => {
       setLoading(true);
-      console.log('Producto actualizado, recargando lista...');
+      console.log('Pedido nuevo, recargando lista...');
       getPedidos();
     });
-    return () => { socket.off('addPedido'); };
+    socket.on('updatePedido', () => {
+      setLoading(true);
+      console.log('Pedido actualizado, recargando lista...');
+      getPedidos();
+    });
+    return () => { 
+      socket.off('addPedido'); 
+      socket.off('updatePedido');
+    };
   }, []);
 
   const getPedidos = async () => {

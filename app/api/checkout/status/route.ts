@@ -9,12 +9,14 @@ export async function GET(request: Request) {
   console.log('Payment result:', result);
 
   // Consulta estado de resultado de pago si es necesario
+  let status = 'pending';
   if (result) {
-    const paymentStatus = await getPaymentStatus(result);
-    console.log('Payment status details:', paymentStatus); // Aquí puedes procesar el estado del pago si es necesario
+    const paymentStatus: any = await getPaymentStatus(result);
+    if (paymentStatus.status === 'approved') status = 'approved';
+    if (paymentStatus.status === 'rejected') status = 'rejected';
   }
 
   // redirect to checkout success page
-  const redirectUrl = `${process.env.NEXT_PUBLIC_URL}/checkout/success`;
+  const redirectUrl = `${process.env.NEXT_PUBLIC_URL}/checkout/success?status=${status}`;
   return NextResponse.redirect(redirectUrl);
 }
