@@ -9,7 +9,7 @@ export async function POST(request: Request) {
 
   try {
     const gateway = await getGatewayByMethodId(medioPagoId);
-    
+
     if (!gateway || !gateway.habilitada) {
       return NextResponse.json({ error: "El medio de pago seleccionado no tiene una pasarela activa." }, { status: 400 });
     }
@@ -28,9 +28,9 @@ export async function POST(request: Request) {
         success_url: `${process.env.NEXT_PUBLIC_URL}/api/checkout/status`,
         cancel_url: `${process.env.NEXT_PUBLIC_URL}/products`
       });
-      
+
       const paymentHash = result;
-      return NextResponse.json({ url: `${paymentHash}`, paymentHash: paymentHash }, { status: 200});
+      return NextResponse.json({ url: `${paymentHash}`, paymentHash: paymentHash }, { status: 200 });
     } else if (gatewayNormalized === 'nave') {
       const naveData = await createNaveCheckoutLink({
         external_payment_id: `order-${Date.now()}`,

@@ -16,6 +16,7 @@ export default function OrderDetailCard({ orderId }: { orderId: number }) {
     const fetchOrder = async () => {
       const res = await fetch(`/api/orders/${orderId}`)
       const data = await res.json();
+      console.log(data)
       setOrder(data)
     }
     fetchOrder()
@@ -59,6 +60,12 @@ export default function OrderDetailCard({ orderId }: { orderId: number }) {
           )}
           <p className="text-sm text-gray-700"><span className="font-bold">Envio:</span> {order?.delivery.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}</p>
           <p className="text-sm text-gray-700"><span className="font-bold">Total:</span> {order?.total.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}</p>
+        </div>
+        {/* datos del cliente */}
+        <div className="mt-4 space-y-1 flex flex-row justify-around">
+          <p className="text-sm text-gray-700"><span className="font-bold">Cliente:</span> {order?.payer_name}</p>
+          {order?.payer_address && <p className="text-sm text-gray-700"><span className="font-bold">Domicilio:</span> {order?.payer_address}</p>}
+          <p className="text-sm text-gray-700"><span className="font-bold">Teléfono:</span> {order?.payer_phone}</p>
         </div>
       </div>
     </div>
