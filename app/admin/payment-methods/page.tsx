@@ -234,3 +234,34 @@ export default function PaymentMethodsPage() {
     </div>
   )
 }
+
+/**
+ * Verificación de Filtro de Medios de Pago
+He revisado la implementación del ruteador de pagos para verificar que los clientes solo vean medios de pago activos
+y con pasarela asignada.
+
+1. Comportamiento al deshabilitar una Pasarela
+En el archivo lib/queries.ts, la función toggleGateway maneja la deshabilitación de forma robusta:
+
+Si se deshabilita una pasarela (habilitada = false), se ejecuta un UPDATE automático que pone en NULL el campo pasarela_id 
+de todos los medios de pago asociados. Esto asegura que esos medios de pago queden "sin plataforma asignada" inmediatamente.
+
+2. Filtrado en el Checkout
+La función que lista los medios de pago para el cliente es getActivePaymentMethods en lib/queries.ts:
+Utiliza un JOIN (Inner Join) con la tabla pasarela. Esto excluye automáticamente cualquier medio de pago que tenga
+pasarela_id = NULL. Además, incluye la condición WHERE p.habilitada = TRUE, lo que garantiza que si por alguna razón 
+un medio tiene asignada una pasarela deshabilitada, tampoco se muestre.
+
+3. Actualización Automática
+El componente PaymentSelector en el checkout consulta la API /api/payment-methods/active cada vez que se carga.
+Las consultas a la base de datos utilizan unstable_noStore(), lo que evita el cacheo de Next.js y asegura que el cliente 
+siempre vea la configuración más reciente del administrador.
+
+Conclusión
+El flujo es correcto y la actualización es automática. Si el comercio deshabilita una pasarela,
+los medios de pago vinculados desaparecerán del checkout para el próximo cliente que intente pagar
+(o si el cliente actual refresca la lista).
+
+NOTA: Al volver a habilitar una pasarela, el administrador deberá re-asignar los medios de pago manualmente,
+ya que la deshabilitación previa borró la vinculación.
+ */
