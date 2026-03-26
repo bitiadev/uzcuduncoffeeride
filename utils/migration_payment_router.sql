@@ -37,5 +37,35 @@ SELECT 'AMEX', '/logos/amex.png', NULL, 1
 WHERE NOT EXISTS (SELECT 1 FROM mediopago WHERE nombre = 'AMEX');
 
 INSERT INTO mediopago (nombre, logo_url, badge_texto, pasarela_id) 
-SELECT 'Débito Visa', '/logos/visa-debito.png', NULL, 1 
-WHERE NOT EXISTS (SELECT 1 FROM mediopago WHERE nombre = 'Débito Visa');
+SELECT 'Debito', '/logos/debito.png', NULL, 1 
+WHERE NOT EXISTS (SELECT 1 FROM mediopago WHERE nombre = 'Debito');
+
+INSERT INTO mediopago (nombre, logo_url, badge_texto, pasarela_id) 
+SELECT 'Bna', '/logos/bna.png', NULL, 1 
+WHERE NOT EXISTS (SELECT 1 FROM mediopago WHERE nombre = 'Bna');
+
+INSERT INTO mediopago (nombre, logo_url, badge_texto, pasarela_id) 
+SELECT 'Cabal', '/logos/cabal.png', NULL, 1 
+WHERE NOT EXISTS (SELECT 1 FROM mediopago WHERE nombre = 'Cabal');
+
+INSERT INTO mediopago (nombre, logo_url, badge_texto, pasarela_id) 
+SELECT 'Naranja', '/logos/naranja.png', NULL, 1 
+WHERE NOT EXISTS (SELECT 1 FROM mediopago WHERE nombre = 'Naranja');
+
+INSERT INTO mediopago (nombre, logo_url, badge_texto, pasarela_id) 
+SELECT 'Cuenta Dni', '/logos/cuenta_dni.png', NULL, 1 
+WHERE NOT EXISTS (SELECT 1 FROM mediopago WHERE nombre = 'Cuenta Dni');
+
+INSERT INTO mediopago (nombre, logo_url, badge_texto, pasarela_id) 
+SELECT 'Mercado Pago', '/logos/mercado_pago.png', NULL, 1 
+WHERE NOT EXISTS (SELECT 1 FROM mediopago WHERE nombre = 'Mercado Pago');
+
+INSERT INTO mediopago (nombre, logo_url, badge_texto, pasarela_id) 
+SELECT 'Modo', '/logos/modo.jpg', NULL, 1 
+WHERE NOT EXISTS (SELECT 1 FROM mediopago WHERE nombre = 'Modo');
+
+INSERT INTO mediopago (nombre, logo_url, badge_texto, pasarela_id) 
+SELECT 'Uala', '/logos/uala.png', NULL, 1 
+WHERE NOT EXISTS (SELECT 1 FROM mediopago WHERE nombre = 'Uala');
+
+
