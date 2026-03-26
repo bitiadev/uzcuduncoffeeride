@@ -119,9 +119,20 @@ export async function createNaveCheckoutLink(args: NaveCheckoutArgs): Promise<an
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    console.error('Nave Payment Intent Error:', error);
-    throw new Error('Error al crear intención de pago en Nave');
+    const errorText = await response.text();
+    let errorDetail = errorText;
+    try {
+      errorDetail = JSON.stringify(JSON.parse(errorText), null, 2);
+    } catch (e) {}
+    
+    console.error('--- NAVE ERROR DETAILS ---');
+    console.error('URL:', `${apiUrl}/payment_request/ecommerce`);
+    console.error('Status:', response.status);
+    console.error('Response:', errorDetail);
+    console.error('Body sent:', JSON.stringify(body, null, 2));
+    console.error('---------------------------');
+    
+    throw new Error(`Error Nave (${response.status}): ${errorText}`);
   }
 
   return await response.json();

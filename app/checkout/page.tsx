@@ -671,7 +671,7 @@ export default function CheckoutPage() {
             </div>
             <div className="space-y-2">
               <h2 className="text-2xl font-bold tracking-tight">Procesando tu pago</h2>
-              <p className="text-muted-foreground">Te estamos redirigiendo a <span className="font-semibold text-foreground">{selectedMethod?.nombre || "la pasarela segura"}</span> para completar tu compra.</p>
+              <p className="text-muted-foreground">Te estamos redirigiendo para completar tu compra.</p>
             </div>
             <div className="flex flex-col items-center gap-4">
               <div className="flex gap-1">

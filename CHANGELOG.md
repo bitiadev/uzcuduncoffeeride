@@ -50,3 +50,8 @@ Todas las modificaciones realizadas en el proyecto se registrarán aquí, detall
   - [MODIFICADO] `app/admin/orders/page.tsx`
   - [MODIFICADO] `app/checkout/success/page.tsx`
   - [MODIFICADO] `lib/types.ts`
+
+## [2026-03-25 21:25] - Corrección de Error en Pago Nave y Logs Detallados
+- **Avance:** Se resolvió el error `Token cache invokation fault` que impedía la creación de intenciones de pago en Nave. Se añadió un sistema de logs detallados en el servidor para capturar la respuesta completa de la API de Nave ante cualquier error, facilitando el diagnóstico de problemas de configuración en el entorno de Sandbox.
+- **Archivos editados:**
+  - [MODIFICADO] `lib/nave.ts`
