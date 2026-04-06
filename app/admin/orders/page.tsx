@@ -12,6 +12,7 @@ import { toast } from "sonner"
 import { io } from "socket.io-client";
 import Link from "next/link"
 import store from "@/lib/data" // datos del remitente (nombre, direccion, cuit, etc.)
+import Image from "next/image"
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || (typeof window !== "undefined" ? window.location.origin : "");
 const socket = io(SOCKET_URL, { transports: ["websocket"] });
@@ -184,8 +185,8 @@ export default function OrdersPage() {
       console.log('Pedido actualizado, recargando lista...');
       getPedidos();
     });
-    return () => { 
-      socket.off('addPedido'); 
+    return () => {
+      socket.off('addPedido');
       socket.off('updatePedido');
     };
   }, []);
@@ -336,12 +337,20 @@ export default function OrdersPage() {
             <CardTitle>Lista de Pedidos ({filteredOrders.length})</CardTitle>
             <CardDescription>Gestiona el estado y detalles de todos los pedidos</CardDescription>
           </div>
-          <Link href={process.env.NEXT_PUBLIC_PAYWAY_PORTAL!} target="_blank" rel="noopener noreferrer">
-            <Button className="ml-auto cursor-pointer">
-              <Link2 className="w-4 h-4 mr-2" />
-              Corroborar pagos
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href={process.env.NEXT_PUBLIC_NAVE_PORTAL!} target="_blank" rel="noopener noreferrer">
+              <Button className="ml-auto cursor-pointer" variant="outline">
+                <Image src="/logos/nave.png" alt="Nave" width={20} height={20} />
+                Pagos Nave
+              </Button>
+            </Link>
+            <Link href={process.env.NEXT_PUBLIC_PAYWAY_PORTAL!} target="_blank" rel="noopener noreferrer">
+              <Button className="ml-auto cursor-pointer" variant="outline">
+                <Image src="/logos/payway.png" alt="Payway" width={20} height={20} />
+                Pagos Payway
+              </Button>
+            </Link>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -390,8 +399,8 @@ export default function OrdersPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Select 
-                        value={order.status} 
+                      <Select
+                        value={order.status}
                         onValueChange={(value) => updateOrderStatus(order.id, value as Order["status"])}
                         disabled={order.status === "canceled"}
                       >
