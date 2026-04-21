@@ -84,3 +84,9 @@ Visa crédito (1 cuota)	4025 2200 0000 0127	Cualquiera	Cualquiera	REJECTED
 Visa crédito (1 cuota)	4025 2200 0000 1040	Cualquiera	Cualquiera	REJECTED
 
 ```
+
+## 7. Pedidos al cliente:
+
+- NAVE_POS_ID=tu_pos_id (se obtiene desde el panel de cliente)
+- NAVE_CLIENT_ID=
+- NAVE_CLIENT_SECRET=

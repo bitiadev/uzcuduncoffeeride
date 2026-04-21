@@ -97,17 +97,21 @@ export async function createNaveCheckoutLink(args: NaveCheckoutArgs): Promise<an
       phone: args.buyer.phone,
       doc_type: args.buyer.doc_type || 'DNI',
       doc_number: args.buyer.doc_number,
+      user_id: "userplatform_id",
       billing_address: args.buyer.address ? {
         street_1: args.buyer.address.street,
         city: args.buyer.address.city,
         country: 'AR',
         zipcode: args.buyer.address.zipcode,
+        region: args.buyer.address.city,
       } : undefined,
     } : undefined,
     additional_info: {
       callback_url: args.callback_url,
     },
   };
+
+  console.log('--- NAVE CHECKOUT REQUEST ---, body:', JSON.stringify(body, null, 2));
 
   const response = await fetch(`${apiUrl}/payment_request/ecommerce`, {
     method: 'POST',
