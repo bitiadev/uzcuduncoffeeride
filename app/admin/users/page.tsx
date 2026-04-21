@@ -13,22 +13,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { UserFormDialog } from "@/components/admin/user-form-dialog"
 import { UsersTable } from "@/components/admin/users-table"
+import type { User, Rol } from "@/lib/types"
 
-
-interface User {
-  id: number;
-  email: string;
-  nombre: string;
-  apellido: string;
-  rol_id: number;
-  rol_name: string;
-  pass: string;
-}
-
-interface Rol {
-  id: number;
-  descripcion: string;
-}
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([])
@@ -122,7 +108,7 @@ export default function UsersPage() {
         <UserFormDialog
           key={editingUser ? 'edit' : 'add'} // Reset form when switching between add/edit
           roles={roles}
-          onSubmit={editingUser ? (data) => handleUpdateUser(editingUser.id, data) : handleAddUser}
+          onSubmit={editingUser ? (data) => handleUpdateUser(editingUser.id as number, data) : handleAddUser}
           initialData={editingUser}
           onOpenChange={(isOpen) => {
             if (!isOpen) setEditingUser(null);

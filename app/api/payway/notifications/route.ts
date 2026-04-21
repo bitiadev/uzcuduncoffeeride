@@ -25,8 +25,10 @@ export async function GET(request: Request) {
 
 import { NextResponse } from 'next/server';
 import { getPaymentStatus } from '@/lib/payway';
+import { db } from '@/lib/db';
 
 export async function POST(request: Request) {
+
   try {
     const notification = await request.json();
 
@@ -44,9 +46,15 @@ export async function POST(request: Request) {
 
     const payment: any = await getPaymentStatus(paymentHash);
 
+
     if (payment.status === 'approved') {
+
       console.log('✅ Pago aprobado:', payment.site_transaction_id);
-      // actualizar orden en DB
+      // Actualizamos la orden en DB
+      await db.query(
+        'UPDATE pedido SET pago = $1, status = $2 WHERE payment_hash = $3',
+        [true, 'paid', paymentHash]
+      );
     }
 
     if (payment.status === 'rejected') {

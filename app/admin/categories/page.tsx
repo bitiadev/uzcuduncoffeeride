@@ -17,18 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-
-interface Subcategory {
-  id: string;
-  nombre: string;
-  rubro_id: string;
-}
-
-interface Category {
-  id: string;
-  nombre: string;
-  subcategories?: Subcategory[];
-}
+import type { Category, Subcategory } from "@/lib/types"
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([])
@@ -232,7 +221,7 @@ export default function CategoriesPage() {
                                               <Pencil className="w-4 h-4 mr-2" />
                                               Editar
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleDeleteSubcategory(subcategory.id, subcategory.rubro_id)}>
+                                            <DropdownMenuItem onClick={() => handleDeleteSubcategory(subcategory.id, subcategory.rubro_id!)}>
                                               <Trash2 className="w-4 h-4 mr-2" />
                                               Eliminar
                                             </DropdownMenuItem>
@@ -267,8 +256,8 @@ export default function CategoriesPage() {
       {editingSubcategory && (
         <SubcategoryFormDialog
           initialData={editingSubcategory}
-          rubroId={editingSubcategory.rubro_id}
-          onSubmit={(data) => handleUpdateSubcategory(editingSubcategory.id, editingSubcategory.rubro_id, data)}
+          rubroId={editingSubcategory.rubro_id!}
+          onSubmit={(data) => handleUpdateSubcategory(editingSubcategory.id, editingSubcategory.rubro_id!, data)}
           onOpenChange={() => setEditingSubcategory(null)}
         />
       )}

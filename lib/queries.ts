@@ -110,3 +110,100 @@ export async function getProducts(options: GetProductsOptions = {}): Promise<Pro
     return [];
   }
 }
+
+// --- Payment Router Queries ---
+
+export async function getGateways() {
+  noStore();
+  try {
+    const { rows } = await db.query(`SELECT id, nombre, habilitada FROM pasarela ORDER BY id ASC`);
+    return rows;
+  } catch (error) {
+    console.error('Error fetching gateways:', error);
+    return [];
+  }
+}
+
+export async function toggleGateway(id: number, habilitada: boolean) {
+  try {
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query(`UPDATE pasarela SET habilitada = $1 WHERE id = $2`, [habilitada, id]);
+      if (!habilitada) {
+        // Si se deshabilita, quitar asignación a medios de pago
+        await client.query(`UPDATE mediopago SET pasarela_id = NULL WHERE pasarela_id = $1`, [id]);
+      }
+      await client.query('COMMIT');
+      return true;
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Error toggling gateway:', error);
+    return false;
+  }
+}
+
+export async function getPaymentMethods() {
+  noStore();
+  try {
+    const { rows } = await db.query(`
+      SELECT m.id, m.nombre, m.logo_url, m.badge_texto, m.pasarela_id, p.nombre as pasarela_nombre
+      FROM mediopago m
+      LEFT JOIN pasarela p ON m.pasarela_id = p.id
+      ORDER BY m.nombre ASC
+    `);
+    return rows;
+  } catch (error) {
+    console.error('Error fetching payment methods:', error);
+    return [];
+  }
+}
+
+export async function assignGatewayToMethod(methodId: number, gatewayId: number | null) {
+  try {
+    await db.query(`UPDATE mediopago SET pasarela_id = $1 WHERE id = $2`, [gatewayId, methodId]);
+    return true;
+  } catch (error) {
+    console.error('Error assigning gateway to method:', error);
+    return false;
+  }
+}
+
+export async function getActivePaymentMethods() {
+  noStore();
+  try {
+    // Solo medios que tienen una pasarela activa asignada
+    const { rows } = await db.query(`
+      SELECT m.id, m.nombre, m.logo_url, m.badge_texto, p.nombre as pasarela_nombre
+      FROM mediopago m
+      JOIN pasarela p ON m.pasarela_id = p.id
+      WHERE p.habilitada = TRUE
+      ORDER BY m.nombre ASC
+    `);
+    return rows;
+  } catch (error) {
+    console.error('Error fetching active payment methods:', error);
+    return [];
+  }
+}
+
+export async function getGatewayByMethodId(methodId: number) {
+  noStore();
+  try {
+    const { rows } = await db.query(`
+      SELECT p.nombre, p.habilitada
+      FROM mediopago m
+      JOIN pasarela p ON m.pasarela_id = p.id
+      WHERE m.id = $1
+    `, [methodId]);
+    return rows[0] || null;
+  } catch (error) {
+    console.error('Error fetching gateway by method id:', error);
+    return null;
+  }
+}

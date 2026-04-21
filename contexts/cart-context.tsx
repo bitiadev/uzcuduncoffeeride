@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useReducer, useEffect, useState } from "react"
+import { createContext, useContext, useReducer, useEffect, useState, useCallback } from "react"
 import type { Product, CartItem, CartContextType } from "@/lib/types"
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -69,16 +69,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("moto-cart", JSON.stringify(items));
   }, [items]);
 
-  const addItem = (product: Product, options?: { talle_id?: number; talle_nombre?: string }) => {
+  const addItem = useCallback((product: Product, options?: { talle_id?: number; talle_nombre?: string }) => {
     dispatch({ type: "ADD_ITEM", product, talle_id: options?.talle_id, talle_nombre: options?.talle_nombre });
     setLastItemAddedTimestamp(Date.now());
-  };
+  }, []);
 
-  const removeItem = (productId: string, talle_id?: number) => {
+  const removeItem = useCallback((productId: string, talle_id?: number) => {
     dispatch({ type: "REMOVE_ITEM", productId, talle_id });
-  };
+  }, []);
 
-  const updateQuantity = (productId: string, quantity: number, talle_id?: number) => {
+  const updateQuantity = useCallback((productId: string, quantity: number, talle_id?: number) => {
     if (quantity <= 0) {
       const item = items.find(item => item.product.id === productId && item.talle_id === talle_id);
       if (item) {
@@ -87,26 +87,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } else {
       dispatch({ type: "UPDATE_QUANTITY", productId, quantity, talle_id });
     }
-  };
+  }, [items]);
 
-  const confirmRemoveItem = () => {
+  const confirmRemoveItem = useCallback(() => {
     if (itemToRemove) {
       dispatch({ type: "REMOVE_ITEM", productId: itemToRemove.product.id, talle_id: itemToRemove.talle_id });
       setItemToRemove(null);
     }
-  };
+  }, [itemToRemove]);
 
-  const cancelRemoveItem = () => {
+  const cancelRemoveItem = useCallback(() => {
     if (itemToRemove) {
       dispatch({ type: "UPDATE_QUANTITY", productId: itemToRemove.product.id, quantity: 1, talle_id: itemToRemove.talle_id });
       setItemToRemove(null);
     }
-  };
+  }, [itemToRemove]);
 
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     dispatch({ type: "CLEAR_CART" });
-  };
+  }, []);
 
   const getTotalItems = () => {
     return items.reduce((total, item) => total + item.quantity, 0);

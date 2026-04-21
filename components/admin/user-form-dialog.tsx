@@ -16,21 +16,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus } from "lucide-react"
 import { toast } from "sonner"
+import type { User, Rol } from "@/lib/types"
 
-interface User {
-  id: number;
-  email: string;
-  nombre: string;
-  apellido: string;
-  rol_id: number;
-  rol_name: string;
-  pass: string;
-}
-
-interface Rol {
-  id: number;
-  descripcion: string;
-}
 
 interface UserFormDialogProps {
   roles: Rol[];
@@ -50,7 +37,7 @@ const initialFormData = {
 
 export function UserFormDialog({ roles, onSubmit, initialData, onOpenChange }: UserFormDialogProps) {
   const [isOpen, setIsOpen] = useState(!!initialData);
-  const [formData, setFormData] = useState(initialFormData);
+  const [formData, setFormData] = useState<typeof initialFormData | any>(initialFormData);
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
@@ -79,11 +66,11 @@ export function UserFormDialog({ roles, onSubmit, initialData, onOpenChange }: U
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
-    setFormData(prev => ({ ...prev, [id]: value }));
+    setFormData((prev: typeof initialFormData) => ({ ...prev, [id]: value }));
   };
 
   const handleSelectChange = (value: string) => {
-    setFormData(prev => ({ ...prev, rol_id: value }));
+    setFormData((prev: typeof initialFormData) => ({ ...prev, rol_id: value }));
   }
 
   const handleSubmit = () => {

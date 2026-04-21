@@ -16,16 +16,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useSession } from "next-auth/react"
+import type { User } from "@/lib/types"
 
-interface User {
-  id: number;
-  nombre: string;
-  apellido: string;
-  rol_id: number;
-  rol_name: string;
-  email: string;
-  pass: string;
-}
 
 interface UsersTableProps {
   users: User[]
@@ -115,7 +107,7 @@ export function UsersTable({ users, onEdit, onDelete }: UsersTableProps) {
               className="bg-red-600 text-white hover:bg-red-700"
               onClick={() => {
                 if (userToDelete && onDelete) {
-                  onDelete(userToDelete.id)
+                  onDelete(userToDelete.id as number)
                 }
                 setUserToDelete(null)
               }}
