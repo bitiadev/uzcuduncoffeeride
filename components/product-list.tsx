@@ -6,6 +6,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import type { Product } from '@/lib/types'
 import { io } from "socket.io-client";
 import { useSearchParams } from 'next/navigation'
+import { set } from 'react-hook-form'
+import { Search } from 'lucide-react'
 
 const socket = io(process.env.NEXT_PUBLIC_URL!);
 const PAGE_LIMIT = 24;
@@ -20,9 +22,12 @@ export function ProductList({ initialProducts }: ProductListProps) {
   const searchParams = useSearchParams();
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [searchProducts, setSearchProducts] = useState<Product[]>([]);
+  const [nameSearch, setNameSearch] = useState('');
 
   useEffect(() => {
     setProducts(initialProducts);
+    setSearchProducts(initialProducts);
     setPage(1);
     setHasMore(initialProducts.length === PAGE_LIMIT);
   }, [initialProducts]);
@@ -67,10 +72,34 @@ export function ProductList({ initialProducts }: ProductListProps) {
 
   return (
     <div>
+      <div className="relative mb-6 max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <input
+          type="text"
+          placeholder="Buscar productos..."
+          className="w-full pl-9 pr-4 py-2 rounded-md border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          onChange={(e) => {
+            const query = e.target.value.toLowerCase();
+            setNameSearch(query);
+            if (query) {
+              const filtered = products.filter(p => p.nombre.toLowerCase().includes(query));
+              setSearchProducts(filtered);
+            } else {
+              setSearchProducts([]);
+            }
+          }}
+        />
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
+        {searchProducts.length > 0 || nameSearch ? (
+          searchProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))
+        ) : (
+          products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))
+        )}
       </div>
       <div className="flex items-center justify-center mt-6">
         {hasMore && (
