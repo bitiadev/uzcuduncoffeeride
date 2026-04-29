@@ -118,27 +118,34 @@ export function ProductCard({ product }: ProductCardProps) {
         <CardContent>
           {product.precio > 0 && (
             <div>
-              <p className="text-2xl font-bold text-primary">
-                {product.moneda === 'ARS' ? '$' : 'USD'}{' '}
-                {product.precio.toLocaleString("es-AR")}
-              </p>
-              {product.precio_alternativo > 0 && (
-                <div className="mt-1 flex items-center justify-between text-sm text-muted-foreground">
-                  <p className="font-semibold text-muted-foreground">
+              {product.precio_alternativo > 0 ? (
+                <>
+                  <div className="mt-1 flex items-center justify-between text-sm text-muted-foreground">
+                    <p className="text-2xl font-bold text-primary">
+                      {product.moneda === 'ARS' ? '$' : 'USD'}{' '}
+                      {product.precio_alternativo.toLocaleString("es-AR")} transf.
+                    </p>
+                  
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setTransferDialogOpen(true)}
+                      style={{ cursor: 'pointer'}}
+                    >
+                      Transferir
+                    </Button>
+                  </div>
+                  <p className="font-semibold text-muted-foreground text-md pt-2">
                     {product.moneda === 'ARS' ? '$' : 'USD'}{' '}
-                    {product.precio_alternativo.toLocaleString("es-AR")} transf.
+                    {product.precio.toLocaleString("es-AR")} <span className="text-xs text-muted-foreground">(precio lista)</span>
                   </p>
-                  {/* Datos de transferencia */}
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setTransferDialogOpen(true)}
-                  >
-                    Transferir
-                  </Button>
-
-                </div>
+                    {/* Datos de transferencia */}
+                </>
+              ) : (
+                <p className="text-2xl font-bold text-primary">
+                  {product.moneda === 'ARS' ? '$' : 'USD'}{' '}
+                  {product.precio.toLocaleString("es-AR")}
+                </p>
               )}
             </div>
           )}
