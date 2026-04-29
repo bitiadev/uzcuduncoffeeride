@@ -65,7 +65,7 @@ export function CafeSection() {
 
             <Link
               className="mt-8 bg-primary text-white inline-flex hover:bg-primary/90 hover:scale-105 hover:transition-all hover:duration-300 transition-colors items-center justify-center gap-2 px-4 py-2 rounded-lg text-lg"
-              href="https://drive.google.com/file/d/1_YcslAzxJwMjBXBLQKVgVIYQXjFEaA1j/view?usp=sharing" target="_blank">
+              href="https://drive.google.com/file/d/1cCujWybU9KmhHSrvIMCD0jba9NS-Vl5g/view?usp=drive_link" target="_blank">
               Nuestro Menú
               <Coffee className="ml-2 w-5 h-5" />
             </Link>
