@@ -13,7 +13,7 @@ export async function CategoriesSection() {
           Nuestras Categorías
         </h2>
         {categories && categories.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
             {categories.map((category: { id: number; nombre: string }, index: number) => (
               <Link key={category.id} href={`/products?category=${category.id}`} passHref>
                 <Card className="group hover:shadow-lg transition-all duration-300 cursor-pointer hover-lift h-full animate-on-scroll"
