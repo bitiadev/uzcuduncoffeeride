@@ -25,7 +25,7 @@ export function FeaturedProductsClient() {
         }
 
         const featuredProducts: Product[] = await response.json();
-        setProducts(featuredProducts.slice(0, 3));
+        setProducts(featuredProducts.slice(0, 10));
       } catch (error) {
         console.error(error);
       } finally {
@@ -52,7 +52,7 @@ export function FeaturedProductsClient() {
           return response.json();
         })
         .then(data => {
-          setProducts(data.slice(0, 3));
+          setProducts(data.slice(0, 10));
         })
         .catch(error => {
           console.error(error);
