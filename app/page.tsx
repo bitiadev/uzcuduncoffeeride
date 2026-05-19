@@ -19,9 +19,9 @@ export default async function HomePage() {
 
       <HeroSection />
 
-      <CategoriesSection />
-
       <FeaturedProductsClient />
+
+      <CategoriesSection />     
 
       <CafeSection />
 
