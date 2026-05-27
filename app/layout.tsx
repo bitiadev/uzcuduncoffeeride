@@ -18,7 +18,7 @@ const montserrat = Montserrat({
 })
 
 export const metadata: Metadata = {
-  title: "Uzcudun Coffe & Ride",
+  title: "Uzcudun Coffee & Ride",
   description:"Tu destino para motocicletas, vehículos eléctricos, accesorios y el mejor café. Descubre nuestra amplia gama de productos.",
   generator: "Bitia",
 }
