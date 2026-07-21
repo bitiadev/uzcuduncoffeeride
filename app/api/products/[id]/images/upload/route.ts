@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import path from "path"
-import { supabaseAdmin } from "@/lib/supabase-server"
+import { uploadObject, imageUrlFor } from "@/lib/object-storage"
 
 export const runtime = "nodejs" // necesitamos fs
 
@@ -46,19 +46,10 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${base}${ext}`;
         const storagePath = `products/${productId}/${filename}`;
 
-        // Subir a Supabase Storage (bucket 'images')
-        const uploadRes = await supabaseAdmin.storage
-          .from("images")
-          .upload(storagePath, file, { contentType: file.type });
-
-        if (uploadRes.error) {
-          throw new Error(`Error subiendo a Storage: ${uploadRes.error.message}`);
-        }
-
-        const { data: publicData } = supabaseAdmin.storage
-          .from("images")
-          .getPublicUrl(storagePath);
-        const publicUrl = publicData.publicUrl;
+        // Subir a MinIO (bucket 'images')
+        const buffer = Buffer.from(await file.arrayBuffer());
+        await uploadObject(storagePath, buffer, file.type);
+        const publicUrl = imageUrlFor(storagePath);
 
         // Insertar en DB con orden al final
         const insert = await client.query(
