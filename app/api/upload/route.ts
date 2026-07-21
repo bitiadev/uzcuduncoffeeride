@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
+import { uploadObject, imageUrlFor } from '@/lib/object-storage';
 
 const MAX_FILE_SIZE_MB = 10;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -34,11 +33,11 @@ export async function POST(request: Request) {
     // Create a unique filename to prevent overwrites
     const timestamp = Date.now();
     const filename = `${timestamp}-${file.name}`;
+    const key = `uploads/${filename}`;
 
-    const path = join(process.cwd(), 'public', 'uploads', filename);
-    await writeFile(path, buffer);
+    await uploadObject(key, buffer, file.type);
 
-    return NextResponse.json({ success: true, url: `/uploads/${filename}` });
+    return NextResponse.json({ success: true, url: imageUrlFor(key) });
 
   } catch (error) {
     console.error('Error al subir el archivo:', error);
